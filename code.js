@@ -3,11 +3,9 @@ const ctx = cvs.getContext('2d');
 let score = 0;
 let gamePaused = false;
 let displayScore = document.querySelector(".score");
+let displayHighscore = document.querySelector(".highscore");
 let pausedLabel = document.querySelector(".paused-label");
-let sDirX = 1;
-let sDirY = 0;
 let sDir = "right";
-
 
 let snake = [
     {x : 40, y : 40},
@@ -21,6 +19,12 @@ let apple = {
     x : random(0, 50)*10,
     y : random(0, 50)*10
 };
+
+if (localStorage.getItem('highscore') == null) {
+    localStorage.setItem('highscore', 0);
+}
+
+displayHighscore.textContent = `Highscore: ${parseInt(localStorage.getItem('highscore'))}`;
 
 console.log("Your score: " + score);
 
@@ -40,34 +44,6 @@ function game() {
         }
     );
     
-    snakeMove();
-
-    if ((snake[0].x == apple.x) && (snake[0].y == apple.y)) {
-        newApple();
-        score++;
-        console.log("Score: " + score);
-        displayScore.textContent = `Your score: ${score}`;
-    } else {
-        snake.pop();
-    }
-
-    // Draw apple
-    ctx.fillStyle = "#A32C2C";
-    ctx.fillRect(apple.x, apple.y, 10, 10);
-}
-
-function random(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min)) + min;
-}
-
-function newApple() {
-    apple.x = random(0, 50)*10;
-    apple.y =  random(0, 50)*10;
-}
-
-function snakeMove() {
     let snakeHead =  {};
 
     for (let x in snake[0]){
@@ -87,76 +63,134 @@ function snakeMove() {
         snakeHead.y+=10;
     }
 
-    // for (let i = 0; i < snake.length; i++){
-    //     if ((snake[i].x = snakeHead.x) && (snake[i].y = snakeHead.y)){
-    //         // restartGame();
-    //         console.log("змея врезаласб");
+    if (snakeHead.x > 490) {
+        snakeHead.x = 0;
+    } else if (snakeHead.x < 0) {
+        snakeHead.x = 490;
+    }
+
+    if (snakeHead.y > 490) {
+        snakeHead.y = 0;
+    } else if (snakeHead.y < 0) {
+        snakeHead.y = 490;
+    }
+
+    let crash = false;
+
+    for (let i = 0; i < snake.length; i++){
+        if ((snake[i].x == snakeHead.x) && (snake[i].y == snakeHead.y)){
+            console.log("Snake ate itself");
+            crash = true;
+        }
+    }
+
+    if (crash) {
+        restartGame();
+    }
+
+    if (!crash) {
+        snake.unshift(snakeHead);
+
+        if ((snake[0].x == apple.x) && (snake[0].y == apple.y)) {
+            newApple();
+            score++;
+            console.log("Score: " + score);
+            displayScore.textContent = `Your score: ${score}`;
+        } else {
+            snake.pop();
+        }
+    }
+
+    // Draw apple
+    ctx.fillStyle = "#A32C2C";
+    ctx.fillRect(apple.x, apple.y, 10, 10);
+}
+
+function random(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
+}
+
+function newApple() {
+    // let x = random(0, 50)*10;
+    // let y = random(0, 50)*10;
+    
+    // let wrongSpawn = function() {
+    //     for (let i = 0; i < snake.length; i++) {
+    //         if ((x == snake.x) && (y == snake.y)) {
+    //             return true;
+
+    //         } else {
+    //             return false;
+    //         }
     //     }
     // }
 
-    // console.log("snake[0].x, snake[0].y,");
-    // console.log(snake[0].x);
-    // console.log(snake[0].y);
-    // console.log(snake[1].x);
-    // console.log(snake[2].y);
-    // console.log(snake[3].y);
-    // console.log(snake[3].y);
-    // console.log(snake[4].y);
-    // console.log(snake[4].y);
-    // console.log("snakeHead.x, snakeHead.y");
-    // console.log(snakeHead.x);
-    // console.log(snakeHead.y);
-
-    // snake.forEach(
-    //     element => {
-    //         if ((element[i].x = snakeHead.x) && (element[i].y = snakeHead.y)){
-    //             //         // restartGame();
-    //         console.log("змея врезаласб");
-    //     }
-    // );
-
-    snake.unshift(snakeHead);
+    // if (wrongSpawn) {
+    //     newApple();
+    // } else {
+    //     apple.x = random(0, 50)*10;
+    //     apple.y =  random(0, 50)*10;
+    // }
+    
+    apple.x = random(0, 50)*10;
+    apple.y =  random(0, 50)*10;
 }
 
-// function restartGame(){
-//     let snake = [
-//         {x : 40, y : 40},
-//         {x : 30, y : 40},
-//         {x : 20, y : 40},
-//         {x : 10, y : 40},
-//         {x : 0, y : 40},
-//     ];
+function restartGame(){
+    snake = [
+        {x : 40, y : 40},
+        {x : 30, y : 40},
+        {x : 20, y : 40},
+        {x : 10, y : 40},
+        {x : 0, y : 40},
+    ];
+    sDir = "right";
 
-//     sDir = "right";
+    let endMessage = "Oops!";
 
-//     newApple();
+    if (score > parseInt(localStorage.getItem('highscore'))) {
+        localStorage.setItem('highscore', score);
+        endMessage = "New highscore!";
+    }
 
-// }
+    score = 0;
+    displayScore.textContent = `Your score: ${score}`;
+    displayHighscore.textContent = `Your highscore: ${localStorage.getItem('highscore')}`;
+    
+    newApple();
+
+    cvs.classList.toggle("blur");
+    pausedLabel.textContent = endMessage;
+    pausedLabel.classList.toggle("display-flex");
+    clearInterval(interval);
+    
+
+    setTimeout(function(){
+        cvs.classList.toggle("blur");
+        pausedLabel.textContent = "Game is paused";
+        pausedLabel.classList.toggle("display-flex");
+        interval = setInterval(game, 100);
+    }, 1000)
+}
 
 document.addEventListener("keydown", event => {
     if (gamePaused == false) {
         if ((event.keyCode == 37) && (sDir != "right")) {
-            console.log("left arrow pressed");
-            sDirX = -1;
-            sDirY = 0;
+            console.log("Left arrow pressed");
             sDir = "left";
         }
         else if ((event.keyCode == 38) && (sDir != "down")) {
-            console.log("up arrow pressed");
-            sDirX = 0;
-            sDirY = 1;
+            console.log("Up arrow pressed");
             sDir = "up";
         }
         else if ((event.keyCode == 39) && (sDir != "left")) {
-            console.log("right arrow pressed");
-            sDirX = 1;
-            sDirY = 0;
+            console.log("Right arrow pressed");
             sDir = "right";
         }
         else if ((event.keyCode == 40) && (sDir != "up")) {
-            console.log("down arrow pressed");
-            sDirX = 0;
-            sDirY = -1;
+            console.log("Down arrow pressed");
             sDir = "down";
         }
     }
@@ -178,21 +212,12 @@ document.addEventListener("keydown", event => {
     }
 })
 
-// let hs = 10;
-
-// localStorage.setItem('highs', hs);
-
-// let hsFromLocalStorage = parseInt(localStorage.getItem('highs'));
-
-// alert(hsFromLocalStorage);
-
-
-
 /*
     #2F8C73 -- snake
     #B4D354 -- background
     #A32C2C -- apple
 */
+
 
 
     

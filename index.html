@@ -11,13 +11,14 @@
 </head>
 <body>
     <div class="wrapper">
-        <div class="logo">Snake by <a href="https://github.com/andrewgul">andrewgul</a></div>
+        <div class="logo">Snake by <a href="https://github.com/andrewgul" target="blank">andrewgul</a></div>
         <div class="how-to">Move – arrows, pause – space</div>
         <div class="canvas-wrapper">
             <div class="paused-label">Game is paused</div>
             <canvas id="cvs" width="500" height="500"></canvas>
         </div>
-        <div class="score">Your score: 0</div>
+        <div class="score" id="score">Your score: 0</div>
+        <div class="highscore" id="highscore">Highscore: 0</div>
     </div>
     <script src="code.js"></script>
 </body>
